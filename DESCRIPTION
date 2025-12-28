@@ -1,0 +1,18 @@
+Package: geneSetEmbedding
+Title: Gene Set to Embedding Utilities
+Version: 0.0.1
+Authors@R: person(given = "enrichit", family = "contributors", role = c("aut", "cre"), email = "noreply@example.com")
+Author: enrichit contributors [aut, cre]
+Maintainer: enrichit contributors <noreply@example.com>
+Description: Compute network diffusion features, learn gene embeddings, derive gene set Gaussian representations, and support similarity and concise gene set construction.
+License: Artistic-2.0
+Depends: 
+    R (>= 4.1.0)
+Imports:
+    Matrix,
+    stats
+Suggests:
+    torch,
+    testthat
+Encoding: UTF-8
+RoxygenNote: 7.3.3
