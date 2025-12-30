@@ -46,7 +46,7 @@ gsemb_fit_gene_embedding <- function(node_features,
     torch_manual_seed <- get("torch_manual_seed", envir = torch)
     torch_manual_seed(seed)
 
-    dev <- if (device == "cuda" && torch::cuda_is_available()) torch::device("cuda") else torch::device("cpu")
+    dev <- if (device == "cuda" && torch::cuda_is_available()) torch::torch_device("cuda") else torch::torch_device("cpu")
 
     X_tensor <- torch::torch_tensor(X, dtype = torch::torch_float())$to(device = dev)
 
@@ -80,7 +80,7 @@ gsemb_fit_gene_embedding <- function(node_features,
         }
     }
 
-    z <- model(X_tensor)$z$to(device = torch::device("cpu"))$detach()$to(dtype = torch::torch_double())
+    z <- model(X_tensor)$z$to(device = torch::torch_device("cpu"))$detach()$to(dtype = torch::torch_double())
     emb <- as.matrix(z)
     rownames(emb) <- rownames(X)
     colnames(emb) <- paste0("V", seq_len(dim))

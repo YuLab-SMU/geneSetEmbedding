@@ -86,7 +86,7 @@ gsemb_fit_set2gaussian_torch <- function(adj,
     torch <- getNamespace("torch")
     set.seed(seed)
     torch::torch_manual_seed(seed)
-    dev <- if (device == "cuda" && torch::cuda_is_available()) torch::device("cuda") else torch::device("cpu")
+    dev <- if (device == "cuda" && torch::cuda_is_available()) torch::torch_device("cuda") else torch::torch_device("cpu")
 
     Z <- torch::torch_randn(c(n, dim), device = dev, dtype = torch::torch_float(), requires_grad = TRUE)
     mu <- torch::torch_randn(c(length(set_ids), dim), device = dev, dtype = torch::torch_float(), requires_grad = TRUE)
@@ -141,12 +141,12 @@ gsemb_fit_set2gaussian_torch <- function(adj,
         loss$backward()
         opt$step()
 
-        losses[ep] <- as.numeric(loss$detach()$to(device = torch::device("cpu")))
+        losses[ep] <- as.numeric(loss$detach()$to(device = torch::torch_device("cpu")))
     }
 
-    Z_cpu <- Z$detach()$to(device = torch::device("cpu"))$to(dtype = torch::torch_double())
-    mu_cpu <- mu$detach()$to(device = torch::device("cpu"))$to(dtype = torch::torch_double())
-    logvar_cpu <- logvar$detach()$to(device = torch::device("cpu"))$to(dtype = torch::torch_double())
+    Z_cpu <- Z$detach()$to(device = torch::torch_device("cpu"))$to(dtype = torch::torch_double())
+    mu_cpu <- mu$detach()$to(device = torch::torch_device("cpu"))$to(dtype = torch::torch_double())
+    logvar_cpu <- logvar$detach()$to(device = torch::torch_device("cpu"))$to(dtype = torch::torch_double())
 
     gene_emb <- as.matrix(Z_cpu)
     rownames(gene_emb) <- nodes
