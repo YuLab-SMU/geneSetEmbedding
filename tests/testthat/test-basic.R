@@ -62,10 +62,45 @@ test_that("High-level API runs end-to-end on CPU", {
   expect_equal(dim(ss), c(2, 2))
 
   stats <- c(A = 2, B = 1, C = 0.5, D = -1, E = -2)
-  ea <- geneSetEmbedding:::gsemb_embedding_enrichment(stats, fit, gene_sets = gene_sets, nperm = 50, seed = 1, top_genes = 3)
+  ea <- gsemb_embedding_enrichment(stats, fit, gene_sets = gene_sets, nperm = 50, seed = 1, top_genes = 3)
   expect_true(is.data.frame(ea))
-  expect_true(all(c("ID", "ES", "pvalue", "p.adjust", "core_enrichment") %in% names(ea)))
+  expect_true(all(c("ID", "ES", "pvalue", "p.adjust", "core_enrichment", "degree_beta", "status") %in% names(ea)))
   expect_equal(nrow(ea), 2)
+  expect_true(all(ea$status == "ok"))
+  expect_true(all(is.finite(ea$pvalue)))
+  expect_true(all(is.finite(ea$p.adjust)))
+
+  gsea <- gsemb_weighted_gsea(
+    stats, fit,
+    gene_sets = gene_sets, nperm = 50, seed = 1, top_genes = 3, alternative = "greater"
+  )
+  expect_equal(gsea$ES, ea$ES[match(gsea$ID, ea$ID)], tolerance = 1e-10)
+
+  gsea_hub <- gsemb_weighted_gsea(
+    stats, fit,
+    gene_sets = gene_sets, degree_beta = 1, nperm = 50, seed = 1, alternative = "greater"
+  )
+  expect_false(isTRUE(all.equal(unname(gsea$ES), unname(gsea_hub$ES))))
+
+  y <- c(A = 1, B = 1, C = 0, D = 0, E = 0)
+  ora <- gsemb_weighted_ora(
+    y, fit,
+    gene_sets = gene_sets, restrict_to_members = TRUE,
+    nperm = 50, seed = 1, alternative = "greater"
+  )
+  expect_equal(nrow(ora), 2)
+  expect_true(all(ora$degree_beta == 0))
+
+  sweep <- gsemb_sweep_hub_beta(
+    stats, fit,
+    betas = c(0, 0.5, 1),
+    mode = "gsea",
+    gene_sets = gene_sets,
+    nperm = 30, seed = 1, alternative = "greater"
+  )
+  expect_true(is.list(sweep$results))
+  expect_equal(length(sweep$results), 3)
+  expect_true("ES_beta_0" %in% names(sweep$compare))
 
   concise <- gsemb_concise_gene_sets(fit, gene_sets = gene_sets, top_n = 2, min_size = 1, restrict_to_members = TRUE)
   expect_equal(length(concise$S1), 2)
