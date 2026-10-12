@@ -33,3 +33,12 @@ sym_kl_distance <- function(mu, var, mu2, var2) {
 rcpp_enrichment_permutations <- function(W, stats, n_perm, seed) {
   .Call(`_geneSetEmbedding_rcpp_enrichment_permutations`, W, stats, n_perm, seed)
 }
+
+#' @keywords internal
+#' @noRd
+kmedoids_hop <- function(i, p, x, k, seed, m, max_iter) {
+  .Call(
+    `_geneSetEmbedding_kmedoids_hop`,
+    i, p, x, k, seed, m, max_iter
+  )
+}

@@ -4,36 +4,61 @@
 \alias{gsemb_select_landmarks}
 \title{Select landmark nodes for diffusion features}
 \usage{
-gsemb_select_landmarks(adj, k = 128, method = c("degree", "random"), seed = 1)
+gsemb_select_landmarks(
+  adj,
+  k = 128,
+  method = c("degree", "random", "betweenness", "kmedoids"),
+  seed = 1,
+  betweenness_cutoff = -1,
+  kmedoids_m = 50,
+  kmedoids_max_iter = 10
+)
 }
 \arguments{
 \item{adj}{Adjacency matrix with rownames as node IDs.}
 
 \item{k}{Number of landmarks to select (capped at number of nodes).}
 
-\item{method}{\code{"degree"} or \code{"random"}.}
+\item{method}{Landmark selection method: \code{"degree"} ranks by the sum of
+incident edge weights, \code{"random"} samples nodes uniformly,
+\code{"betweenness"} ranks by betweenness with edge lengths
+\code{1 / weight}, and \code{"kmedoids"} selects medoids on the largest
+connected component using the same edge costs (farthest-first, then
+restricted PAM).}
 
-\item{seed}{Random seed used when \code{method="random"}.}
+\item{seed}{Random seed used when \code{method="random"} or
+\code{method="kmedoids"} (farthest-first start).}
+
+\item{betweenness_cutoff}{Path-length cutoff for \code{igraph::betweenness}
+when \code{method="betweenness"}, measured on the sum of edge costs
+(\code{1/weight}). Default \code{-1} is exact betweenness. A positive value
+drops paths longer than that cost. Ignored for other methods.}
+
+\item{kmedoids_m}{Per-cluster candidate cap (strength Top-M) for restricted
+PAM when \code{method="kmedoids"}. Ignored for other methods.}
+
+\item{kmedoids_max_iter}{Maximum PAM passes when \code{method="kmedoids"}.
+Ignored for other methods.}
 }
 \value{
 A character vector of landmark node IDs.
 }
 \description{
-Choose landmark nodes either by degree (highest first) or random sampling.
+Choose landmark nodes by node strength, uniform random sampling,
+weight-aware betweenness, or weight-aware K-Medoids. Edge cost is
+\code{1 / weight}, so higher edge weight is a shorter path. For betweenness
+and K-Medoids, nonzero edge weights must be finite and positive; the scale
+may be 0--1, STRING 0--1000, or another positive scale.
 }
 \examples{
 # Build a small graph
 edges <- data.frame(
   node1 = c("A", "B", "C", "D", "E"),
-  node2 = c("B", "C", "D", "E", "A")
+  node2 = c("B", "C", "D", "E", "A"),
+  weight = c(1.0, 2.0, 0.5, 1.5, 1.0)
 )
-adj <- gsemb_build_graph(edges)
+adj <- gsemb_build_graph(edges, weight = "weight")
+gsemb_select_landmarks(adj, k = 2, method = "degree")
+gsemb_select_landmarks(adj, k = 2, method = "betweenness")
 
-# Select 2 landmarks by degree
-lm_deg <- gsemb_select_landmarks(adj, k = 2, method = "degree")
-lm_deg
-
-# Select 2 landmarks randomly
-lm_rnd <- gsemb_select_landmarks(adj, k = 2, method = "random", seed = 42)
-lm_rnd
 }

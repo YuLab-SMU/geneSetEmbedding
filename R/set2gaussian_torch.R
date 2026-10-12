@@ -17,7 +17,8 @@ gsemb_compute_diffusion_distributions <- function(adj,
 #'
 #' @param adj Adjacency matrix with node IDs in rownames.
 #' @param gene_sets Named list of character vectors (gene IDs).
-#' @param landmarks Optional landmark IDs; selected by degree if `NULL`.
+#' @param landmarks Optional landmark IDs. If `NULL`, selected with
+#'   `landmark_method`.
 #' @param k Number of landmarks when `landmarks` is `NULL`.
 #' @param dim Embedding dimension.
 #' @param alpha Restart probability for diffusion.
@@ -30,6 +31,9 @@ gsemb_compute_diffusion_distributions <- function(adj,
 #' @param lr Learning rate.
 #' @param batch_size Batch size for sampling landmarks/sets per epoch.
 #' @param seed Random seed.
+#' @param landmark_method Landmark selection method when `landmarks` is `NULL`.
+#' @param betweenness_cutoff,kmedoids_m,kmedoids_max_iter Passed to
+#'   [gsemb_select_landmarks()] when `landmarks` is `NULL`.
 #' @param device `"cpu"` or `"cuda"` (falls back to CPU if CUDA is unavailable).
 #'
 #' @return A list with `gene_embedding`, `set_mu`, `set_var`, `landmarks`, and `losses`.
@@ -82,9 +86,14 @@ gsemb_fit_set2gaussian_torch <- function(adj,
                                          lr = 5e-3,
                                          batch_size = 8,
                                          seed = 1,
+                                         landmark_method = c("degree", "random", "betweenness", "kmedoids"),
+                                         betweenness_cutoff = -1,
+                                         kmedoids_m = 50,
+                                         kmedoids_max_iter = 10,
                                          device = c("cpu", "cuda")) {
   require_torch()
   device <- match.arg(device)
+  landmark_method <- match.arg(landmark_method)
   gene_sets <- validate_gene_sets(gene_sets)
   if (!inherits(adj, "Matrix")) stop("adj must be a Matrix")
   nodes <- rownames(adj)
@@ -92,7 +101,15 @@ gsemb_fit_set2gaussian_torch <- function(adj,
   n <- length(nodes)
 
   if (is.null(landmarks)) {
-    landmarks <- gsemb_select_landmarks(adj, k = k, method = "degree", seed = seed)
+    landmarks <- gsemb_select_landmarks(
+      adj,
+      k = k,
+      method = landmark_method,
+      seed = seed,
+      betweenness_cutoff = betweenness_cutoff,
+      kmedoids_m = kmedoids_m,
+      kmedoids_max_iter = kmedoids_max_iter
+    )
   }
   lm_idx <- match(landmarks, nodes)
   if (any(is.na(lm_idx))) stop("some landmarks are not in graph nodes")

@@ -20,6 +20,10 @@ gsemb_fit_set2gaussian_torch(
   lr = 0.005,
   batch_size = 8,
   seed = 1,
+  landmark_method = c("degree", "random", "betweenness", "kmedoids"),
+  betweenness_cutoff = -1,
+  kmedoids_m = 50,
+  kmedoids_max_iter = 10,
   device = c("cpu", "cuda")
 )
 }
@@ -28,7 +32,8 @@ gsemb_fit_set2gaussian_torch(
 
 \item{gene_sets}{Named list of character vectors (gene IDs).}
 
-\item{landmarks}{Optional landmark IDs; selected by degree if `NULL`.}
+\item{landmarks}{Optional landmark IDs. If `NULL`, selected with
+\code{landmark_method}.}
 
 \item{k}{Number of landmarks when `landmarks` is `NULL`.}
 
@@ -53,6 +58,12 @@ gsemb_fit_set2gaussian_torch(
 \item{batch_size}{Batch size for sampling landmarks/sets per epoch.}
 
 \item{seed}{Random seed.}
+
+\item{landmark_method}{Landmark selection method when \code{landmarks} is
+\code{NULL}.}
+
+\item{betweenness_cutoff, kmedoids_m, kmedoids_max_iter}{Passed to
+\code{\link{gsemb_select_landmarks}} when \code{landmarks} is \code{NULL}.}
 
 \item{device}{`"cpu"` or `"cuda"` (falls back to CPU if CUDA is unavailable).}
 }

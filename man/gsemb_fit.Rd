@@ -24,6 +24,10 @@ gsemb_fit(
   batch_size = 8,
   seed = 1,
   device = c("cpu", "cuda"),
+  landmark_method = c("degree", "random", "betweenness", "kmedoids"),
+  betweenness_cutoff = -1,
+  kmedoids_m = 50,
+  kmedoids_max_iter = 10,
   ...
 )
 }
@@ -60,11 +64,19 @@ gsemb_fit(
 
 \item{device}{`"cpu"` or `"cuda"` (falls back to CPU if CUDA is unavailable).}
 
+\item{landmark_method}{Landmark selection method passed to
+\code{\link{gsemb_select_landmarks}}: \code{"degree"}, \code{"random"},
+\code{"betweenness"}, or \code{"kmedoids"}.}
+
+\item{betweenness_cutoff, kmedoids_m, kmedoids_max_iter}{Passed to
+\code{\link{gsemb_select_landmarks}} when that method is used.}
+
 \item{...}{Passed through to the selected training backend.}
 }
 \value{
 A `gsemb_embedding` object with components:
-  `gene_embedding`, `set_mu`, `set_var`, `adj`, and training metadata.
+  `gene_embedding`, `set_mu`, `set_var`, `adj`, `landmarks`,
+  `landmark_method`, and training metadata.
 }
 \description{
 This is the main entry point: build a graph from a PPI edge list (or accept
