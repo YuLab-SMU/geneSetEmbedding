@@ -29,7 +29,9 @@ A sparse adjacency matrix of class \code{dgCMatrix}.
 }
 \description{
 Construct a sparse adjacency matrix from an edge list. Node names are stored
-in the matrix dimnames and are used throughout the package.
+in the matrix dimnames and are used throughout the package. This function
+does not drop self-loops, collapse bidirectional undirected pairs, or apply
+a score cutoff; use \code{\link{gsemb_clean_edges}} first when needed.
 }
 \examples{
 # Create a small edge list
@@ -46,4 +48,7 @@ adj
 # Build directed unweighted graph
 adj_dir <- gsemb_build_graph(edges, directed = TRUE)
 adj_dir
+}
+\seealso{
+\code{\link{gsemb_clean_edges}}
 }

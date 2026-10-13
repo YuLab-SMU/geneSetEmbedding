@@ -120,8 +120,12 @@ gsemb_diffuse_seeds <- function(W, S, alpha = 0.5, tol = 1e-10, max_iter = 200) 
 #' @param tol Convergence tolerance.
 #' @param max_iter Maximum number of iterations.
 #' @param normalize Normalization for \code{gsemb_transition_matrix}.
-#' @param landmark_method Landmark selection method when \code{landmarks} is \code{NULL}.
+#' @param landmark_method Landmark selection method when \code{landmarks} is
+#'   \code{NULL}. One of \code{"degree"}, \code{"random"}, \code{"betweenness"},
+#'   \code{"kmedoids"}; see \code{\link{gsemb_select_landmarks}}.
 #' @param seed Random seed for landmark selection.
+#' @param betweenness_cutoff,kmedoids_m,kmedoids_max_iter Passed to
+#'   \code{\link{gsemb_select_landmarks}} when \code{landmarks} is \code{NULL}.
 #'
 #' @return A numeric matrix of size \code{n_nodes x n_landmarks}.
 #' @examples
@@ -151,10 +155,22 @@ gsemb_compute_node_landmark_features <- function(adj,
                                                  tol = 1e-10,
                                                  max_iter = 200,
                                                  normalize = "col",
-                                                 landmark_method = "degree",
-                                                 seed = 1) {
+                                                 landmark_method = c("degree", "random", "betweenness", "kmedoids"),
+                                                 seed = 1,
+                                                 betweenness_cutoff = -1,
+                                                 kmedoids_m = 50,
+                                                 kmedoids_max_iter = 10) {
+  landmark_method <- match.arg(landmark_method)
   if (is.null(landmarks)) {
-    landmarks <- gsemb_select_landmarks(adj, k = k, method = landmark_method, seed = seed)
+    landmarks <- gsemb_select_landmarks(
+      adj,
+      k = k,
+      method = landmark_method,
+      seed = seed,
+      betweenness_cutoff = betweenness_cutoff,
+      kmedoids_m = kmedoids_m,
+      kmedoids_max_iter = kmedoids_max_iter
+    )
   }
   nodes <- rownames(adj)
   if (is.null(nodes)) stop("adj must have rownames")

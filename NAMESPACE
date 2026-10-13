@@ -2,6 +2,7 @@
 
 export(gsemb_as_embedding_matrix)
 export(gsemb_build_graph)
+export(gsemb_clean_edges)
 export(gsemb_calculate_all_similarities)
 export(gsemb_cluster_similarity)
 export(gsemb_compute_node_landmark_features)

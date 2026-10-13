@@ -12,8 +12,11 @@ gsemb_compute_node_landmark_features(
   tol = 1e-10,
   max_iter = 200,
   normalize = "col",
-  landmark_method = "degree",
-  seed = 1
+  landmark_method = c("degree", "random", "betweenness", "kmedoids"),
+  seed = 1,
+  betweenness_cutoff = -1,
+  kmedoids_m = 50,
+  kmedoids_max_iter = 10
 )
 }
 \arguments{
@@ -31,9 +34,14 @@ gsemb_compute_node_landmark_features(
 
 \item{normalize}{Normalization for \code{gsemb_transition_matrix}.}
 
-\item{landmark_method}{Landmark selection method when \code{landmarks} is \code{NULL}.}
+\item{landmark_method}{Landmark selection method when \code{landmarks} is
+\code{NULL}. One of \code{"degree"}, \code{"random"}, \code{"betweenness"},
+\code{"kmedoids"}; see \code{\link{gsemb_select_landmarks}}.}
 
 \item{seed}{Random seed for landmark selection.}
+
+\item{betweenness_cutoff, kmedoids_m, kmedoids_max_iter}{Passed to
+\code{\link{gsemb_select_landmarks}} when \code{landmarks} is \code{NULL}.}
 }
 \value{
 A numeric matrix of size \code{n_nodes x n_landmarks}.

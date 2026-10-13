@@ -21,10 +21,16 @@
 #' @param epochs,lr,batch_size Training hyperparameters for torch methods.
 #' @param seed Random seed.
 #' @param device `"cpu"` or `"cuda"` (falls back to CPU if CUDA is unavailable).
+#' @param landmark_method Landmark selection method passed to
+#'   [gsemb_select_landmarks()]: `"degree"`, `"random"`, `"betweenness"`,
+#'   or `"kmedoids"`.
+#' @param betweenness_cutoff,kmedoids_m,kmedoids_max_iter Passed to
+#'   [gsemb_select_landmarks()] when that method is used.
 #' @param ... Passed through to the selected training backend.
 #'
 #' @return A `gsemb_embedding` object with components:
-#'   `gene_embedding`, `set_mu`, `set_var`, `adj`, and training metadata.
+#'   `gene_embedding`, `set_mu`, `set_var`, `adj`, `landmarks`,
+#'   `landmark_method`, and training metadata.
 #' @examples
 #' \dontrun{
 #' # Simulate a small PPI edge list
@@ -83,9 +89,14 @@ gsemb_fit <- function(ppi,
                       batch_size = 8,
                       seed = 1,
                       device = c("cpu", "cuda"),
+                      landmark_method = c("degree", "random", "betweenness", "kmedoids"),
+                      betweenness_cutoff = -1,
+                      kmedoids_m = 50,
+                      kmedoids_max_iter = 10,
                       ...) {
   method <- match.arg(method)
   device <- match.arg(device)
+  landmark_method <- match.arg(landmark_method)
   gene_sets <- validate_gene_sets(gene_sets)
 
   adj <- if (inherits(ppi, "Matrix")) {
@@ -110,6 +121,10 @@ gsemb_fit <- function(ppi,
       batch_size = batch_size,
       seed = seed,
       device = device,
+      landmark_method = landmark_method,
+      betweenness_cutoff = betweenness_cutoff,
+      kmedoids_m = kmedoids_m,
+      kmedoids_max_iter = kmedoids_max_iter,
       ...
     )
     res <- list(
@@ -119,13 +134,22 @@ gsemb_fit <- function(ppi,
       set_mu = fit$set_mu,
       set_var = fit$set_var,
       landmarks = fit$landmarks,
+      landmark_method = landmark_method,
       losses = fit$losses
     )
     class(res) <- "gsemb_embedding"
     return(res)
   }
 
-  landmarks <- gsemb_select_landmarks(adj, k = k, method = "degree", seed = seed)
+  landmarks <- gsemb_select_landmarks(
+    adj,
+    k = k,
+    method = landmark_method,
+    seed = seed,
+    betweenness_cutoff = betweenness_cutoff,
+    kmedoids_m = kmedoids_m,
+    kmedoids_max_iter = kmedoids_max_iter
+  )
   node_features <- gsemb_compute_node_landmark_features(
     adj = adj,
     landmarks = landmarks,
@@ -155,6 +179,7 @@ gsemb_fit <- function(ppi,
     set_mu = gauss$mu,
     set_var = gauss$var,
     landmarks = landmarks,
+    landmark_method = landmark_method,
     losses = NULL
   )
   class(res) <- "gsemb_embedding"
